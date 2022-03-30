@@ -15,9 +15,7 @@ async function getMoviesList(genre, year, sort, page = 1) {
   //add queries with selected options
   let request = `https://api.themoviedb.org/3/discover/movie?sort_by=${sort}${
     year != "All" ? "&primary_release_year=" + year : ""
-  }${
-    genre != "All" ? "with_genres=" + genre : ""
-  }api_key=****&page=${page}`;
+  }${genre != "All" ? "with_genres=" + genre : ""}api_key=****&page=${page}`;
   let movies = await fetch(request);
   movies = await movies.json();
   //remove daisabled attribute to let user generate an other random movie
@@ -31,18 +29,20 @@ function generateRandomMovie() {
   //to genrate a random movie, we should know how many pages and results in a page, we have
   getMoviesList(genre.value, year.value, sort.value).then((value) => {
     if (value.page == 1) {
-      //after the first request, we send another request but this time with a random page between 1 and all pages
+      //after the first request, we send another request but this time with a random page between 1 and 500 pages or all pages that is less than 500(because some limitation in api)
       getMoviesList(
         genre.value,
         year.value,
         sort.value,
-        Math.floor(Math.random() * value.total_pages) + 1
+        Math.floor(
+          Math.random() * (value.total_pages > 500 ? 500 : value.total_pages)
+        ) + 1
       )
         .then((value) => {
           //here we choose a random index in the results array
           random_index =
             Math.floor(Math.random() * value.results.length - 1) + 1;
-            //here we send all values we need to addMovieInfos and the random movies infos will be displayed
+          //here we send all values we need to addMovieInfos and the random movies infos will be displayed
           addMovieInfos(
             value.results[random_index].poster_path,
             value.results[random_index].title,
